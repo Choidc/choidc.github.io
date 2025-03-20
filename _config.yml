@@ -1,3 +1,5 @@
-theme: jekyll-theme-minimal
-title: Dochan's homepage
-description: Bookmark this to keep an eye on my project updates!
+title: "Portfolio"
+description: "Welcome to my portfolio website"
+baseurl: "" 
+url: "https://choidc.github.io"
+theme: minima
