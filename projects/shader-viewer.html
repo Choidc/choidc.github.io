@@ -26,9 +26,28 @@
       border-radius: 6px;
       font-family: sans-serif;
     }
+
+    #shaderList {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 10px;
+      border-radius: 8px;
+      font-family: sans-serif;
+    }
+
+    #shaderList button {
+      padding: 6px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
   </style>
-<!-- ✅ importmap 이 반드시 여기에 있어야 함 -->
-<script type="importmap">
+  <script type="importmap">
   {
     "imports": {
       "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -40,68 +59,148 @@
 
 <body>
   <input type="file" id="uploader" accept=".glb,.gltf" />
+  <div id="shaderList">
+    <button data-shader="shader1">Normal Dot Shader</button>
+    <button data-shader="shader2">Rainbow UV Shader</button>
+    <button data-shader="shader3">Red Glow Shader</button>
+  </div>
   <canvas id="viewer"></canvas>
 
   <script type="module">
-        import * as THREE from 'three';
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+      import * as THREE from 'three';
+      import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+      import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
     const canvas = document.getElementById('viewer');
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x222222);
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 1.5, 3);
-        scene.add(new THREE.DirectionalLight(0xffffff, 1).position.set(1, 2, 1));
-    scene.add(new THREE.AmbientLight(0x444444));
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(1, 2, 2);
+      scene.add(directionalLight);
+      scene.add(new THREE.AmbientLight(0x404040));
+
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true; // 부드럽게
+      controls.dampingFactor = 0.05;
+      controls.rotateSpeed = 0.6;
+      controls.zoomSpeed = 0.8;
+      controls.panSpeed = 0.5;
+      controls.minDistance = 2;   // 최소 줌 거리 (너무 작으면 모델이 사라져)
+      controls.maxDistance = 20;  // 최대 줌 거리 늘려줌
+      controls.target.set(0, 1, 0); // 모델 중심을 카메라가 보게 설정
+      controls.update();
 
     const loader = new GLTFLoader();
     let currentModel = null;
+      let currentShaderKey = 'shader1'; // 기본값
 
-        function resize() {
-          camera.aspect = window.innerWidth / window.innerHeight;
-          camera.updateProjectionMatrix();
-          renderer.setSize(window.innerWidth, window.innerHeight);
+      const shaders = {
+        shader1: {
+          name: 'Normal Dot Shader',
+          vertex: `
+      varying vec3 vN;
+      void main() {
+        vN = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+          fragment: `
+      varying vec3 vN;
+      void main() {
+        float d = dot(vN, vec3(0.0, 0.0, 1.0));
+        gl_FragColor = vec4(vec3(0.1, 0.8, 0.4) * d, 1.0);
+      }
+    `
+        },
+
+        shader2: {
+          name: 'Rainbow UV Shader',
+          vertex: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+          fragment: `
+      varying vec2 vUv;
+      void main() {
+        gl_FragColor = vec4(vUv.x, vUv.y, 1.0 - vUv.x, 1.0);
+      }
+    `
+        },
+
+        shader3: {
+          name: 'Red Glow Shader',
+          vertex: `
+      varying vec3 vPos;
+      void main() {
+        vPos = (modelViewMatrix * vec4(position, 1.0)).xyz;
+        gl_Position = projectionMatrix * vec4(vPos, 1.0);
+      }
+    `,
+          fragment: `
+      varying vec3 vPos;
+      void main() {
+        float intensity = 1.0 / length(vPos);
+        gl_FragColor = vec4(intensity * 1.2, 0.0, 0.0, 0.5);
+      }
+    `
         }
-        window.addEventListener('resize', resize);
-        resize();
+      };
 
-        document.getElementById('uploader').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-        const buffer = await file.arrayBuffer();
-
-        loader.parse(buffer, '', gltf => {
-        if (currentModel) scene.remove(currentModel);
-        currentModel = gltf.scene;
+      function applyShader(shaderKey) {
+        const shader = shaders[shaderKey];
+        if (!shader || !currentModel) return;
 
         const mat = new THREE.ShaderMaterial({
-          vertexShader: `
-            varying vec3 vN;
-            void main() {
-              vN = normalize(normalMatrix * normal);
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-          `,
-          fragmentShader: `
-            varying vec3 vN;
-            void main() {
-              float d = dot(vN, vec3(0.0, 0.0, 1.0));
-              gl_FragColor = vec4(vec3(0.1, 0.8, 0.4) * d, 1.0);
-            }
-          `,
-          side: THREE.DoubleSide
+          vertexShader: shader.vertex,
+          fragmentShader: shader.fragment,
+          side: THREE.DoubleSide,
+          transparent: true
         });
 
         currentModel.traverse(c => { if (c.isMesh) c.material = mat; });
+      }
+
+      document.querySelectorAll('#shaderList button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.dataset.shader;
+          currentShaderKey = key;
+          applyShader(key);
+        });
+      });
+
+      function resize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      document.getElementById('uploader').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      const buffer = await file.arrayBuffer();
+
+      loader.parse(buffer, '', gltf => {
+        if (currentModel) scene.remove(currentModel);
+        currentModel = gltf.scene;
         scene.add(currentModel);
+        currentModel.rotation.y = 0;
+        applyShader(currentShaderKey);
       });
     });
 
     function animate() {
       requestAnimationFrame(animate);
       if (currentModel) currentModel.rotation.y += 0.005;
+      controls.update();
       renderer.render(scene, camera);
     }
 
