@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Experience - Dochan Choi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #222222;
+      --accent-color: #0047FF;
+    }
+
+    body.dark {
+      --bg-color: #111111;
+      --text-color: #eeeeee;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    nav {
+      background: var(--bg-color);
+      border-bottom: 1px solid #ddd;
+      padding: 1rem;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    nav a {
+      margin: 0 1rem;
+      text-decoration: none;
+      font-weight: bold;
+      color: var(--text-color);
+    }
+
+    .toggle-btn {
+      position: absolute;
+      right: 20px;
+      top: 14px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .hero {
+      height: 60vh;
+      background: linear-gradient(to right, var(--accent-color), #0099FF);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+    }
+
+    .timeline {
+      position: relative;
+      max-width: 1000px;
+      margin: 60px auto;
+      padding: 0 20px;
+    }
+
+    .timeline::after {
+      content: '';
+      position: absolute;
+      width: 4px;
+      background-color: var(--accent-color);
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      margin-left: -2px;
+    }
+
+    .timeline-block {
+      padding: 20px 40px;
+      position: relative;
+      width: 50%;
+    }
+
+    .timeline-block.left {
+      left: 0;
+    }
+
+    .timeline-block.right {
+      left: 50%;
+    }
+
+    .timeline-block::before {
+      content: " ";
+      position: absolute;
+      top: 30px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: var(--accent-color);
+      border: 3px solid white;
+      z-index: 1;
+    }
+
+    .timeline-block.left::before {
+      right: -10px;
+    }
+
+    .timeline-block.right::before {
+      left: -10px;
+    }
+
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .timeline-content {
+      background-color: var(--bg-color);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transform: translateY(40px);
+      animation: fadeInUp 0.8s ease forwards;
+      animation-delay: 0.3s;
+    }
+
+    .timeline-content:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .timeline-content h3 {
+      margin-bottom: 0.5rem;
+      color: var(--accent-color);
+    }
+
+    .timeline-content p {
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+
+    @media screen and (max-width: 768px) {
+      .timeline::after {
+        left: 10px;
+      }
+
+      .timeline-block {
+        width: 100%;
+        padding-left: 30px;
+        padding-right: 10px;
+      }
+
+      .timeline-block.right {
+        left: 0%;
+      }
+
+      .timeline-block::before {
+        left: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <a href="index.html">Info</a>
+    <a href="experience.html">Experience</a>
+    <a href="shader.html">Shader Viewer</a>
+    <a href="contact.html">Contact</a>
+    <button class="toggle-btn" id="darkToggle">Toggle Dark Mode</button>
+  </nav>
+
+  <div class="hero">
+    <h1>Experience</h1>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-block left">
+      <div class="timeline-content">
+        <h3>Epitone, USA (Feb 2024 ~ )</h3>
+        <p>Software Lead – AR HUD graphics system development, CANBus + sensor integration, Vulkan optimization</p>
+      </div>
+    </div>
+
+    <div class="timeline-block right">
+      <div class="timeline-content">
+        <h3>Epitone Korea (Aug 2022 ~ Feb 2024)</h3>
+        <p>Software Engineer – HUD simulator + glasses demo, map editor, localization, driving simulator</p>
+      </div>
+    </div>
+
+    <div class="timeline-block left">
+      <div class="timeline-content">
+        <h3>Com2us (2016 ~ 2022)</h3>
+        <p>
+          Senior Client Programmer<br>
+          <strong>Summoners War: Chronicle</strong> – Module integration, multi-platform, validation tools<br>
+          <strong>Heroes War</strong> – Equipment/card system, animation, inventory, rewards<br>
+          <strong>Ace Fishing VR</strong> – Physics-based VR interaction, tension gauge, Daydream input
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('darkToggle').addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+    });
+  </script>
+
+</body>
+
+</html>

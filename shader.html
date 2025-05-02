@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Shader Viewer - Dochan Choi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #222222;
+      --accent-color: #0047FF;
+    }
+
+    body.dark {
+      --bg-color: #111111;
+      --text-color: #eeeeee;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    nav {
+      background: var(--bg-color);
+      border-bottom: 1px solid #ddd;
+      padding: 1rem;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    nav a {
+      margin: 0 1rem;
+      text-decoration: none;
+      font-weight: bold;
+      color: var(--text-color);
+    }
+
+    .toggle-btn {
+      position: absolute;
+      right: 20px;
+      top: 14px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .hero {
+      height: 40vh;
+      background: linear-gradient(to right, var(--accent-color), #0099FF);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+    }
+
+.shader-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  background: #fff;
+  padding: 20px 5%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  border-radius: 10px;
+  margin-top: -40px;
+  z-index: 2;
+  position: relative;
+}
+
+
+    #viewer {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+#uploader {
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  background-color: white;
+  cursor: pointer;
+}
+
+#shaderList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+#shaderList button {
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+#shaderList button:hover {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Info</a>
+    <a href="experience.html">Experience</a>
+    <a href="shader.html">Shader Viewer</a>
+    <a href="contact.html">Contact</a>
+    <button class="toggle-btn" id="darkToggle">Toggle Dark Mode</button>
+  </nav>
+
+  <div class="hero">
+    <h1>Shader Viewer</h1>
+  </div>
+
+<div class="shader-controls">
+  <label>
+    <input type="file" id="uploader" accept=".glb,.gltf" />
+  </label>
+  <div id="shaderList">
+    <button data-shader="shader1">Normal Dot Shader</button>
+    <button data-shader="shader2">Rainbow UV Shader</button>
+    <button data-shader="shader3">Red Glow Shader</button>
+  </div>
+</div>
+  <canvas id="viewer"></canvas>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const canvas = document.getElementById('viewer');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x222222);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 1.5, 3);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(1, 2, 2);
+    scene.add(directionalLight);
+    scene.add(new THREE.AmbientLight(0x404040));
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.6;
+    controls.zoomSpeed = 0.8;
+    controls.panSpeed = 0.5;
+    controls.minDistance = 2;
+    controls.maxDistance = 20;
+    controls.target.set(0, 1, 0);
+    controls.update();
+
+    const loader = new GLTFLoader();
+    let currentModel = null;
+    let currentShaderKey = 'shader1';
+
+    const shaders = {
+      shader1: {
+        name: 'Normal Dot Shader',
+        vertex: `
+          varying vec3 vN;
+          void main() {
+            vN = normalize(normalMatrix * normal);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragment: `
+          varying vec3 vN;
+          void main() {
+            float d = dot(vN, vec3(0.0, 0.0, 1.0));
+            gl_FragColor = vec4(vec3(0.1, 0.8, 0.4) * d, 1.0);
+          }
+        `
+      },
+      shader2: {
+        name: 'Rainbow UV Shader',
+        vertex: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragment: `
+          varying vec2 vUv;
+          void main() {
+            gl_FragColor = vec4(vUv.x, vUv.y, 1.0 - vUv.x, 1.0);
+          }
+        `
+      },
+      shader3: {
+        name: 'Red Glow Shader',
+        vertex: `
+          varying vec3 vPos;
+          void main() {
+            vPos = (modelViewMatrix * vec4(position, 1.0)).xyz;
+            gl_Position = projectionMatrix * vec4(vPos, 1.0);
+          }
+        `,
+        fragment: `
+          varying vec3 vPos;
+          void main() {
+            float intensity = 1.0 / length(vPos);
+            gl_FragColor = vec4(intensity * 1.2, 0.0, 0.0, 0.5);
+          }
+        `
+      }
+    };
+
+    function applyShader(key) {
+      const shader = shaders[key];
+      if (!shader || !currentModel) return;
+
+      const mat = new THREE.ShaderMaterial({
+        vertexShader: shader.vertex,
+        fragmentShader: shader.fragment,
+        side: THREE.DoubleSide,
+        transparent: true
+      });
+
+      currentModel.traverse(c => {
+        if (c.isMesh) c.material = mat;
+      });
+    }
+
+    document.querySelectorAll('#shaderList button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.shader;
+        currentShaderKey = key;
+        applyShader(key);
+      });
+    });
+
+    document.getElementById('uploader').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      const buffer = await file.arrayBuffer();
+
+      loader.parse(buffer, '', gltf => {
+        if (currentModel) scene.remove(currentModel);
+        currentModel = gltf.scene;
+        scene.add(currentModel);
+        applyShader(currentShaderKey);
+      });
+    });
+
+    function resize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (currentModel) currentModel.rotation.y += 0.005;
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // 다크모드 토글
+    document.getElementById('darkToggle').addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+    });
+  </script>
+</body>
+</html>

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <title>Dochan Choi - Graphics Engineer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact - Dochan Choi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
       --bg-color: #ffffff;
@@ -60,7 +61,7 @@
     }
 
     .hero {
-      height: 100vh;
+      height: 40vh;
       background: linear-gradient(to right, var(--accent-color), #0099FF);
       color: white;
       display: flex;
@@ -73,37 +74,64 @@
 
     .hero h1 {
       font-size: 3rem;
-      margin-bottom: 1rem;
     }
 
-    .hero p {
-      font-size: 1.25rem;
-    }
-
-    section {
-      padding: 60px 20px;
+    .contact-container {
       max-width: 1000px;
-      margin: auto;
+      margin: 40px auto;
+      padding: 0 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      align-items: flex-start;
     }
 
-    h2 {
-      font-size: 2rem;
+    .contact-info {
+      flex: 1 1 300px;
+    }
+
+    .contact-info p {
       margin-bottom: 1rem;
+      line-height: 1.5;
     }
 
-    ul {
-      list-style: none;
-      padding-left: 0;
+    form {
+      flex: 1 1 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
 
-    ul li {
-      margin-bottom: 0.5rem;
+    input,
+    textarea {
+      padding: 0.75rem;
       font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      resize: vertical;
+    }
+
+    button {
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: bold;
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px;
+      font-size: 0.9rem;
+      color: #777;
     }
   </style>
 </head>
-<body>
 
+<body>
   <nav>
     <a href="index.html">Info</a>
     <a href="experience.html">Experience</a>
@@ -113,28 +141,35 @@
   </nav>
 
   <div class="hero">
-    <h1>Dochan Choi</h1>
-    <p>Graphics Engineer / Programmer</p>
+    <h1>Contact</h1>
   </div>
 
-  <section>
-    <h2>Technical Skills</h2>
-    <ul>
-      <li><strong>Languages:</strong> C#, C++, C</li>
-      <li><strong>Graphics:</strong> OpenGL, DirectX, Vulkan</li>
-      <li><strong>Shader Languages:</strong> HLSL, ShaderLab (Unity)</li>
-      <li><strong>Engines:</strong> Unity (Android, iOS, Windows, Linux, Embedded Linux)</li>
-      <li><strong>XR Development:</strong> Google Daydream, ARCore</li>
-      <li><strong>Tools:</strong> GitHub, GitLab, Subversion, Jira, Confluence, Jenkins</li>
-    </ul>
-  </section>
+  <div class="contact-container">
+    <div class="contact-info">
+      <p><strong>Dochan Choi</strong></p>
+      <p>San Diego, CA, USA</p>
+      <p>(KR) +82 10-8785-1946<br>(US) +1 858-257-9740</p>
+      <p>ehcks304@naver.com</p>
+    </div>
+
+    <form>
+      <input type="text" name="firstname" placeholder="First Name" required />
+      <input type="text" name="lastname" placeholder="Last Name" required />
+      <input type="email" name="email" placeholder="Email" required />
+      <textarea name="message" rows="5" placeholder="Message" required></textarea>
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <footer>
+    &copy; 2025 Dochan Choi. All rights reserved.
+  </footer>
 
   <script>
-    const toggle = document.getElementById('darkToggle');
-    toggle.addEventListener('click', () => {
+    document.getElementById('darkToggle').addEventListener('click', () => {
       document.body.classList.toggle('dark');
     });
   </script>
-
 </body>
+
 </html>
